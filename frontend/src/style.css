@@ -1,0 +1,17 @@
+body { margin: 0; font-family: system-ui, sans-serif; background: #f4f6f8; color: #1d2733; }
+header { background: #1d2733; color: #fff; padding: 14px 24px; }
+header h1 { margin: 0; font-size: 20px; }
+header small { opacity: .7; }
+main { padding: 16px 24px; display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); }
+.card { background: #fff; border-radius: 8px; padding: 14px 16px; box-shadow: 0 1px 3px rgba(0,0,0,.1); }
+.card h2 { margin: 0 0 8px; font-size: 15px; }
+.wide { grid-column: 1 / -1; }
+.stats { display: flex; gap: 12px; flex-wrap: wrap; }
+.stat { flex: 1; min-width: 120px; padding: 10px; border-radius: 6px; background: #eef2f6; text-align: center; }
+.stat b { display: block; font-size: 24px; }
+.pos { color: #1f9d55; } .neg { color: #d64545; } .neu { color: #7a8794; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+td, th { text-align: left; padding: 4px 6px; border-bottom: 1px solid #e5e9ed; }
+input, select { padding: 6px; margin-right: 6px; }
+.live li { font-size: 13px; margin-bottom: 4px; list-style: none; }
+ul { padding-left: 0; margin: 0; }
