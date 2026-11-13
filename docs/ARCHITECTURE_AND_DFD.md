@@ -5,82 +5,22 @@ This document provides a comprehensive technical reference for the **Social Medi
 ---
 
 ## Table of Contents
-1. [Architectural Overview & Lambda Pattern](#1-architectural-overview--lambda-pattern)
-2. [End-to-End System Architecture Diagram](#2-end-to-end-system-architecture-diagram)
-3. [Docker Container & Deployment Topology](#3-docker-container--deployment-topology)
-4. [HBase NoSQL Storage Schema](#4-hbase-nosql-storage-schema)
-5. [Data Flow Diagrams (DFD)](#5-data-flow-diagrams-dfd)
+1. [End-to-End System Architecture Diagram](#1-end-to-end-system-architecture-diagram)
+2. [Docker Container & Deployment Topology](#2-docker-container--deployment-topology)
+3. [HBase NoSQL Storage Schema](#3-hbase-nosql-storage-schema)
+4. [Data Flow Diagrams (DFD)](#4-data-flow-diagrams-dfd)
    - [DFD Level 0: Context Diagram](#dfd-level-0-context-diagram)
    - [DFD Level 1: System Decomposition](#dfd-level-1-system-decomposition)
+   - [DFD Level 2: Stream & Batch Processing Pipelines](#dfd-level-2-stream--batch-processing-pipelines)
    - [DFD Level 2.1: Streaming Ingestion & Real-Time NLP Pipeline](#dfd-level-21-streaming-ingestion--real-time-nlp-pipeline)
    - [DFD Level 2.2: Offline Batch Processing & Topic Modeling (LDA)](#dfd-level-22-offline-batch-processing--topic-modeling-lda)
    - [DFD Level 2.3: API Serving & WebSocket Delivery](#dfd-level-23-api-serving--websocket-delivery)
-6. [Component Reference & Source Code Map](#6-component-reference--source-code-map)
+5. [Component Reference & Source Code Map](#5-component-reference--source-code-map)
 
 ---
-    
-## 1. Architectural Overview & Lambda Pattern
+      
 
-The system implements a **Lambda Architecture** variant to balance real-time responsiveness with historical analytical depth:
-
-```
-                                  +------------------------------------+
-                                  |   External Data Sources            |
-                                  |   (Hacker News, Sentiment140, etc) |
-                                  +-----------------+------------------+
-                                                    |
-                                                    v
-                                  +------------------------------------+
-                                  |      Ingestion Layer (Kafka)       |
-                                  +--------+------------------+--------+
-                                           |                  |
-                       [Speed / Streaming] |                  | [Speed / Storage]
-                                           v                  |
-                  +-----------------------------------+       |
-                  | Spark Structured Streaming (5s)   |       |
-                  | - Validation, Cleansing, Dedupe   |       |
-                  | - Real-time VADER, Aspects, Lang  |       |
-                  +-----------------+-----------------+       |
-                                    |                         |
-                                    +------------+            |
-                                                 |            |
-                                                 v            v
-                                  +------------------------------------+
-                                  |      Storage Layer (Apache HBase)  |
-                                  |  - raw_posts      - processed_posts|
-                                  |  - analytics      - topics         |
-                                  +--------+------------------+--------+
-                                           ^                  |
-                            [Batch Writes] |                  | [Historical Scan]
-                                           |                  v
-                  +-----------------------------------+       |
-                  | Spark Batch Analytical Engine     |       |
-                  | - Daily Sentiment Aggregates      |<------+
-                  | - MLlib LDA Topic Modeling (k=4)  |
-                  +-----------------------------------+
-                                           |
-                                           v
-                  +-----------------------------------+
-                  | Serving Layer (FastAPI)           |
-                  | - 3s Cache, Context Filtering     |
-                  | - REST Endpoints & WebSocket Push |
-                  +-----------------+-----------------+
-                                    |
-                                    v
-                  +-----------------------------------+
-                  | Presentation Layer (React + Vite) |
-                  | - Recharts Dashboards & Live Feed |
-                  +-----------------------------------+
-```
-
-- **Speed Layer:** Spark Structured Streaming consumes incoming micro-batches (`posts.raw`) every 5 seconds, filters invalid payloads into a Dead Letter Queue (`posts.dlq`), removes duplicate records via a 7-day watermark, applies VADER sentiment and aspect mining, and writes low-latency updates into HBase.
-- **Batch Layer:** Spark Batch Engine periodically scans historical records from HBase `processed_posts`, performs daily multi-dimensional sentiment aggregation, and trains an unsupervised Latent Dirichlet Allocation (LDA) model to uncover latent discussion themes.
-- **Serving Layer:** FastAPI provides low-latency REST query execution backed by an in-memory short-lived cache (3s TTL) and exposes a `/ws/live` WebSocket connection for real-time telemetry.
-- **Presentation Layer:** Single-Page Application (SPA) built in React and served via NGINX, rendering interactive Recharts visualizations and dynamic post search.
-
----
-
-## 2. End-to-End System Architecture Diagram
+## 1. End-to-End System Architecture Diagram
 
 ![System Architecture](diagrams/architecture-system.png)
 
@@ -197,7 +137,7 @@ flowchart TD
 
 ---
 
-## 3. Docker Container & Deployment Topology
+## 2. Docker Container & Deployment Topology
 
 ![Docker Container Topology](diagrams/deployment-topology.png)
 
@@ -269,7 +209,7 @@ graph TB
 
 ---
 
-## 4. HBase NoSQL Storage Schema
+## 3. HBase NoSQL Storage Schema
 
 ![HBase NoSQL Storage Schema](diagrams/hbase-nosql-schema.png)
 
@@ -331,7 +271,7 @@ Row keys are formatted as `"{salt:02d}|{source}|{post_id}"` (e.g. `03|hackernews
 
 ---
 
-## 5. Data Flow Diagrams (DFD)
+## 4. Data Flow Diagrams (DFD)
 
 ### DFD Level 0: Context Diagram
 
@@ -595,7 +535,7 @@ flowchart TD
 
 ---
 
-## 6. Component Reference & Source Code Map
+## 5. Component Reference & Source Code Map
 
 | Layer | Component | File Path | Responsibilities & Technologies |
 |---|---|---|---|
