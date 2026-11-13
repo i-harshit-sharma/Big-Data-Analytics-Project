@@ -4,9 +4,9 @@
 
 | S.No. | Student Name | Roll Number | Role / Contribution |
 |:-----:|:-------------|:------------|:--------------------|
-| 1 | [Student Name 1] | [Roll No. 1] | Data Ingestion & Kafka Pipeline |
-| 2 | [Student Name 2] | [Roll No. 2] | Spark Streaming & NLP Processing |
-| 3 | [Student Name 3] | [Roll No. 3] | HBase Storage, API & Frontend Dashboard |
+| 1 | Abhishek Kumar | 231210003 | Data Ingestion & Kafka Pipeline |
+| 2 | Aditya Narayan Tripathi | 231210003 | Spark Streaming & NLP Processing |
+| 3 | Harshit Sharma | 231210047 | HBase Storage, API & Frontend Dashboard |
 
 ---
 
