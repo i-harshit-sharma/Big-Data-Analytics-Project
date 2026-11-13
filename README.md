@@ -1,24 +1,31 @@
 # Social Media Trend and Sentiment Analysis
 
+## Team Members
+
+| S.No. | Student Name | Roll Number | Role / Contribution |
+|:-----:|:-------------|:------------|:--------------------|
+| 1 | [Student Name 1] | [Roll No. 1] | Data Ingestion & Kafka Pipeline |
+| 2 | [Student Name 2] | [Roll No. 2] | Spark Streaming & NLP Processing |
+| 3 | [Student Name 3] | [Roll No. 3] | HBase Storage, API & Frontend Dashboard |
+
+---
+
 University big data project. It collects posts from Hacker News and a public Twitter dataset, pushes them through Kafka, processes them with Spark, stores them in HBase and shows the results on a React dashboard.
 
 Stack: Apache Kafka 3.8, Apache Spark 3.5.3 (Structured Streaming and batch), Apache HBase 2.1, FastAPI, React. Everything runs in Docker on one laptop.
 
-## How it fits together
+## Architecture & Data Flow
 
-```
-Hacker News API / Sentiment140 file
-        |
-     producer / loaders
-        |
-      Kafka  (posts.raw, bad records go to posts.dlq)
-        |
-   Spark Structured Streaming  ->  HBase  <-  Spark batch job
-                                     |
-                                  FastAPI
-                                     |
-                                React dashboard
-```
+> [!NOTE]
+> For in-depth diagrams (DFD Level 0, Level 1, Level 2 pipelines, Docker container topology, and HBase data model), see **[docs/ARCHITECTURE_AND_DFD.md](docs/ARCHITECTURE_AND_DFD.md)**. All diagrams are available in high-resolution PNG and vector SVG inside [`docs/diagrams/`](docs/diagrams/).
+
+### System Architecture (Lambda Pattern)
+
+![System Architecture](docs/diagrams/architecture-system.png)
+
+### Context Diagram (DFD Level 0)
+
+![DFD Level 0 Context Diagram](docs/diagrams/dfd-level-0.png)
 
 The Spark cluster is three containers: `spark-master`, `spark-worker-1` and `spark-worker-2`. Kafka, HBase, the streaming job, the backend and the frontend each have their own container too, so `docker compose ps` lists nine.
 
@@ -158,6 +165,7 @@ spark/           Dockerfile and app/ (stream_job.py, batch_job.py, nlp.py, hb.py
 backend/         FastAPI app
 frontend/        React app (built and served by nginx)
 dataset/         loaders, Sentiment140 sample and evaluation, Bluesky scripts
-docs/screenshots/
+docs/            detailed architecture & DFD specs, screenshots
+docs/ARCHITECTURE_AND_DFD.md  full architecture and DFD Level 0, 1, 2 diagrams
 DEMO.md          demo script
 ```
