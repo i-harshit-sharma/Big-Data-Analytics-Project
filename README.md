@@ -2,16 +2,27 @@
 
 ## Team Members
 
+<<<<<<< HEAD
 | S.No. | Student Name | Roll Number 
 |:-----:|:-------------|:------------
 | 1 | Abhishek Kumar | 231210003
 | 2 | Aditya Narayan Tripathi | 231210004
 | 3 | Harshit Sharma | 231210047
+=======
+| S.No. | Student Name | Roll Number | Role / Contribution |
+|:-----:|:-------------|:------------|:--------------------|
+| 1 | Abhishek Kumar | 231210003 | Data Ingestion & Kafka Pipeline |
+| 2 | Aditya Narayan Tripathi | 231210003 | Spark Streaming & NLP Processing |
+| 3 | Harshit Sharma | 231210047 | HBase Storage, API & Frontend Dashboard |
+
+---
+>>>>>>> dfds
 
 University big data project. It collects posts from Hacker News and a public Twitter dataset, pushes them through Kafka, processes them with Spark, stores them in HBase and shows the results on a React dashboard.
 
 Stack: Apache Kafka 3.8, Apache Spark 3.5.3 (Structured Streaming and batch), Apache HBase 2.1, FastAPI, React. Everything runs in Docker on one laptop.
 
+<<<<<<< HEAD
 ## Architectural Overview & Lambda Pattern
 
 The system implements a **Lambda Architecture** variant to balance real-time responsiveness with historical analytical depth:
@@ -65,6 +76,20 @@ The system implements a **Lambda Architecture** variant to balance real-time res
                   | - Recharts Dashboards & Live Feed |
                   +-----------------------------------+
 ```
+=======
+## Architecture & Data Flow
+
+> [!NOTE]
+> For in-depth diagrams (DFD Level 0, Level 1, Level 2 pipelines, Docker container topology, and HBase data model), see **[docs/ARCHITECTURE_AND_DFD.md](docs/ARCHITECTURE_AND_DFD.md)**. All diagrams are available in high-resolution PNG and vector SVG inside [`docs/diagrams/`](docs/diagrams/).
+
+### System Architecture (Lambda Pattern)
+
+![System Architecture](docs/diagrams/architecture-system.png)
+
+### Context Diagram (DFD Level 0)
+
+![DFD Level 0 Context Diagram](docs/diagrams/dfd-level-0.png)
+>>>>>>> dfds
 
 - **Speed Layer:** Spark Structured Streaming consumes incoming micro-batches (`posts.raw`) every 5 seconds, filters invalid payloads into a Dead Letter Queue (`posts.dlq`), removes duplicate records via a 7-day watermark, applies VADER sentiment and aspect mining, and writes low-latency updates into HBase.
 - **Batch Layer:** Spark Batch Engine periodically scans historical records from HBase `processed_posts`, performs daily multi-dimensional sentiment aggregation, and trains an unsupervised Latent Dirichlet Allocation (LDA) model to uncover latent discussion themes.
@@ -209,6 +234,7 @@ spark/           Dockerfile and app/ (stream_job.py, batch_job.py, nlp.py, hb.py
 backend/         FastAPI app
 frontend/        React app (built and served by nginx)
 dataset/         loaders, Sentiment140 sample and evaluation, Bluesky scripts
-docs/screenshots/
+docs/            detailed architecture & DFD specs, screenshots
+docs/ARCHITECTURE_AND_DFD.md  full architecture and DFD Level 0, 1, 2 diagrams
 DEMO.md          demo script
 ```
