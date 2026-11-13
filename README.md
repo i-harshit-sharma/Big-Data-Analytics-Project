@@ -1,24 +1,75 @@
 # Social Media Trend and Sentiment Analysis
 
+## Team Members
+
+| S.No. | Student Name | Roll Number 
+|:-----:|:-------------|:------------
+| 1 | Abhishek Kumar | 231210003
+| 2 | Aditya Narayan Tripathi | 231210004
+| 3 | Harshit Sharma | 231210047
+
 University big data project. It collects posts from Hacker News and a public Twitter dataset, pushes them through Kafka, processes them with Spark, stores them in HBase and shows the results on a React dashboard.
 
 Stack: Apache Kafka 3.8, Apache Spark 3.5.3 (Structured Streaming and batch), Apache HBase 2.1, FastAPI, React. Everything runs in Docker on one laptop.
 
-## How it fits together
+## Architectural Overview & Lambda Pattern
+
+The system implements a **Lambda Architecture** variant to balance real-time responsiveness with historical analytical depth:
 
 ```
-Hacker News API / Sentiment140 file
-        |
-     producer / loaders
-        |
-      Kafka  (posts.raw, bad records go to posts.dlq)
-        |
-   Spark Structured Streaming  ->  HBase  <-  Spark batch job
-                                     |
-                                  FastAPI
-                                     |
-                                React dashboard
+                                  +------------------------------------+
+                                  |   External Data Sources            |
+                                  |   (Hacker News, Sentiment140, etc) |
+                                  +-----------------+------------------+
+                                                    |
+                                                    v
+                                  +------------------------------------+
+                                  |      Ingestion Layer (Kafka)       |
+                                  +--------+------------------+--------+
+                                           |                  |
+                       [Speed / Streaming] |                  | [Speed / Storage]
+                                           v                  |
+                  +-----------------------------------+       |
+                  | Spark Structured Streaming (5s)   |       |
+                  | - Validation, Cleansing, Dedupe   |       |
+                  | - Real-time VADER, Aspects, Lang  |       |
+                  +-----------------+-----------------+       |
+                                    |                         |
+                                    +------------+            |
+                                                 |            |
+                                                 v            v
+                                  +------------------------------------+
+                                  |      Storage Layer (Apache HBase)  |
+                                  |  - raw_posts      - processed_posts|
+                                  |  - analytics      - topics         |
+                                  +--------+------------------+--------+
+                                           ^                  |
+                            [Batch Writes] |                  | [Historical Scan]
+                                           |                  v
+                  +-----------------------------------+       |
+                  | Spark Batch Analytical Engine     |       |
+                  | - Daily Sentiment Aggregates      |<------+
+                  | - MLlib LDA Topic Modeling (k=4)  |
+                  +-----------------------------------+
+                                           |
+                                           v
+                  +-----------------------------------+
+                  | Serving Layer (FastAPI)           |
+                  | - 3s Cache, Context Filtering     |
+                  | - REST Endpoints & WebSocket Push |
+                  +-----------------+-----------------+
+                                    |
+                                    v
+                  +-----------------------------------+
+                  | Presentation Layer (React + Vite) |
+                  | - Recharts Dashboards & Live Feed |
+                  +-----------------------------------+
 ```
+
+- **Speed Layer:** Spark Structured Streaming consumes incoming micro-batches (`posts.raw`) every 5 seconds, filters invalid payloads into a Dead Letter Queue (`posts.dlq`), removes duplicate records via a 7-day watermark, applies VADER sentiment and aspect mining, and writes low-latency updates into HBase.
+- **Batch Layer:** Spark Batch Engine periodically scans historical records from HBase `processed_posts`, performs daily multi-dimensional sentiment aggregation, and trains an unsupervised Latent Dirichlet Allocation (LDA) model to uncover latent discussion themes.
+- **Serving Layer:** FastAPI provides low-latency REST query execution backed by an in-memory short-lived cache (3s TTL) and exposes a `/ws/live` WebSocket connection for real-time telemetry.
+- **Presentation Layer:** Single-Page Application (SPA) built in React and served via NGINX, rendering interactive Recharts visualizations and dynamic post search.
 
 The Spark cluster is three containers: `spark-master`, `spark-worker-1` and `spark-worker-2`. Kafka, HBase, the streaming job, the backend and the frontend each have their own container too, so `docker compose ps` lists nine.
 
